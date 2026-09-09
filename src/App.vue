@@ -314,6 +314,7 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-left">
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase w-12">ល.រ</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">កាលបរិច្ឆេទ</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ប្រភេទ</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ចំនួន</th>
@@ -323,19 +324,20 @@
             </thead>
             <tbody class="divide-y divide-gray-50">
               <tr v-if="filteredExpenses.length===0 && !loading">
-                <td colspan="5" class="py-12 text-center text-gray-300">
+                <td colspan="6" class="py-12 text-center text-gray-300">
                   <div class="text-3xl mb-1">💸</div>
                   <p class="text-sm">មិនទាន់មានចំណាយ</p>
                 </td>
               </tr>
               <template v-if="loading && expenses.length===0">
                 <tr v-for="n in 3" :key="'esk'+n" class="animate-pulse">
-                  <td v-for="c in 5" :key="c" class="px-5 py-4">
+                  <td v-for="c in 6" :key="c" class="px-5 py-4">
                     <div class="h-4 bg-gray-100 rounded"></div>
                   </td>
                 </tr>
               </template>
-              <tr v-for="exp in filteredExpenses" :key="'e'+exp.id" class="fade">
+              <tr v-for="(exp, index) in filteredExpenses" :key="'e'+exp.id" class="fade">
+                <td class="px-5 py-3 text-gray-400 whitespace-nowrap">{{ index + 1 }}</td>
                 <td class="px-5 py-3 text-gray-600 whitespace-nowrap">{{ fmtDate(exp.date) }}</td>
                 <td class="px-5 py-3">
                   <span :class="expCatColor(exp.category)"
@@ -416,6 +418,7 @@
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-left">
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase w-12">ល.រ</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">កាលបរិច្ឆេទ</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ប្រភព</th>
                 <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ចំនួន</th>
@@ -425,19 +428,20 @@
             </thead>
             <tbody class="divide-y divide-gray-50">
               <tr v-if="filteredIncomes.length===0 && !loading">
-                <td colspan="5" class="py-12 text-center text-gray-300">
+                <td colspan="6" class="py-12 text-center text-gray-300">
                   <div class="text-3xl mb-1">💰</div>
                   <p class="text-sm">មិនទាន់មានចំណូល</p>
                 </td>
               </tr>
               <template v-if="loading && incomes.length===0">
                 <tr v-for="n in 3" :key="'isk'+n" class="animate-pulse">
-                  <td v-for="c in 5" :key="c" class="px-5 py-4">
+                  <td v-for="c in 6" :key="c" class="px-5 py-4">
                     <div class="h-4 bg-gray-100 rounded"></div>
                   </td>
                 </tr>
               </template>
-              <tr v-for="inc in filteredIncomes" :key="'i'+inc.id" class="fade">
+              <tr v-for="(inc, index) in filteredIncomes" :key="'i'+inc.id" class="fade">
+                <td class="px-5 py-3 text-gray-400 whitespace-nowrap">{{ index + 1 }}</td>
                 <td class="px-5 py-3 text-gray-600 whitespace-nowrap">{{ fmtDate(inc.date) }}</td>
                 <td class="px-5 py-3">
                   <span :class="incSrcColor(inc.source)"
