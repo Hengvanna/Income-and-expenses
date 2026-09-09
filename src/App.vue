@@ -173,7 +173,7 @@
         <h3 class="text-sm font-semibold text-gray-700 mb-3">ចំណាយតាមប្រភេទ</h3>
         <div class="relative" style="height:220px">
           <canvas id="doughnutChart"></canvas>
-          <div v-if="filteredExpenses.length===0 && !loading"
+          <div v-if="realFilteredExpenses.length===0 && !loading"
             class="absolute inset-0 grid place-items-center text-gray-300 text-sm">
             <div class="text-center"><div class="text-3xl">📊</div>មិនមានទិន្នន័យ</div>
           </div>
@@ -243,7 +243,16 @@
               d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
           </svg>
           ចំណាយ
-          <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-semibold">{{ filteredExpenses.length }}</span>
+          <span class="bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded-full font-semibold">{{ realFilteredExpenses.length }}</span>
+        </button>
+        <button @click="activeTab='saving'"
+          :class="activeTab==='saving' ? 'text-blue-500 tab-active' : 'text-gray-400 hover:text-gray-600'"
+          class="flex-1 py-4 text-sm flex items-center justify-center gap-2 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          សន្សំ
+          <span class="bg-blue-100 text-blue-600 text-xs px-2 py-0.5 rounded-full font-semibold">{{ savingsExpenses.length }}</span>
         </button>
         <button @click="activeTab='income'"
           :class="activeTab==='income' ? 'text-emerald-500 tab-active' : 'text-gray-400 hover:text-gray-600'"
@@ -336,7 +345,7 @@
                   </td>
                 </tr>
               </template>
-              <tr v-for="(exp, index) in filteredExpenses" :key="'e'+exp.id" class="fade">
+              <tr v-for="(exp, index) in realFilteredExpenses" :key="'e'+exp.id" class="fade">
                 <td class="px-5 py-3 text-gray-400 whitespace-nowrap">{{ index + 1 }}</td>
                 <td class="px-5 py-3 text-gray-600 whitespace-nowrap">{{ fmtDate(exp.date) }}</td>
                 <td class="px-5 py-3">
@@ -361,7 +370,99 @@
         </div>
       </div>
 
+
+      <!-- ── SAVINGS TAB ── -->
+      <div v-show="activeTab==='saving'">
+        <!-- Add Saving Form -->
+        <div class="p-5 border-b border-gray-50 bg-blue-50/30">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+            <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-500 grid place-items-center text-xs">+</span>
+            បន្ថែមលុយសន្សំ
+          </h3>
+          <form @submit.prevent="addSaving" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+            <div>
+              <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
+              <input type="date" v-model="savForm.date" required
+                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white" />
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-500 mb-1 block">ចំនួន *</label>
+              <input type="number" v-model.number="savForm.amount" min="0" step="0.01" required placeholder="0.00"
+                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white" />
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-500 mb-1 block">រូបិយប័ណ្ណ</label>
+              <div class="flex gap-1.5 h-[38px]">
+                <button type="button" @click="savForm.currency='USD'"
+                  :class="savForm.currency==='USD'?'bg-blue-500 text-white':'bg-white text-gray-500 border-gray-200'"
+                  class="flex-1 border-2 rounded-xl text-xs font-semibold transition-colors">USD</button>
+                <button type="button" @click="savForm.currency='KHR'"
+                  :class="savForm.currency==='KHR'?'bg-amber-500 text-white':'bg-white text-gray-500 border-gray-200'"
+                  class="flex-1 border-2 rounded-xl text-xs font-semibold transition-colors">KHR</button>
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] text-gray-500 mb-1 block">ការពិពណ៌នា</label>
+              <input type="text" v-model="savForm.description" placeholder="ពិពណ៌នា..."
+                class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white" />
+            </div>
+            <div class="flex items-end">
+              <button type="submit" :disabled="expSaving"
+                class="w-full py-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-60 text-white text-sm font-semibold rounded-xl shadow transition-all active:scale-95">
+                {{ expSaving ? '⏳...' : '+ សន្សំ' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Saving Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase w-12">ល.រ</th>
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">កាលបរិច្ឆេទ</th>
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ចំនួន</th>
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase">ការពិពណ៌នា</th>
+                <th class="px-5 py-3 text-xs font-semibold text-gray-400 uppercase text-right">លុប</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-50">
+              <tr v-if="savingsExpenses.length===0 && !loading">
+                <td colspan="5" class="py-12 text-center text-gray-300">
+                  <div class="text-3xl mb-1">🎯</div>
+                  <p class="text-sm">មិនទាន់មានលុយសន្សំ</p>
+                </td>
+              </tr>
+              <template v-if="loading && expenses.length===0">
+                <tr v-for="n in 3" :key="'ssk'+n" class="animate-pulse">
+                  <td v-for="c in 5" :key="c" class="px-5 py-4">
+                    <div class="h-4 bg-gray-100 rounded"></div>
+                  </td>
+                </tr>
+              </template>
+              <tr v-for="(sav, index) in savingsExpenses" :key="'s'+sav.id" class="fade">
+                <td class="px-5 py-3 text-gray-400 whitespace-nowrap">{{ index + 1 }}</td>
+                <td class="px-5 py-3 text-gray-600 whitespace-nowrap">{{ fmtDate(sav.date) }}</td>
+                <td class="px-5 py-3 font-semibold whitespace-nowrap"
+                  :class="sav.currency==='USD'?'text-blue-600':'text-amber-600'">
+                  {{ sav.currency==='USD'?'$':'៛' }}{{ Number(sav.amount).toLocaleString() }}
+                  <span class="text-xs font-normal text-gray-400 ml-1">{{ sav.currency }}</span>
+                </td>
+                <td class="px-5 py-3 text-gray-500 w-full max-w-0 truncate">{{ sav.description || '—' }}</td>
+                <td class="px-5 py-3 text-right">
+                  <button @click="deleteExpense(sav.id)"
+                    class="text-xs text-red-400 hover:text-red-600 hover:bg-red-50 px-2 py-1 rounded transition-colors">
+                    ✕ លុប
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
       <!-- ── INCOME TAB ── -->
+
       <div v-show="activeTab==='income'">
         <!-- Add Income Form -->
         <div class="p-5 border-b border-gray-50 bg-emerald-50/30">
@@ -559,6 +660,7 @@ const MONTH_OPTIONS = (() => {
     const today = new Date().toISOString().slice(0,10)
     const expForm = ref({ date:today, category:'', amount:null, currency:'USD', description:'' })
     const incForm = ref({ date:today, source:'',   amount:null, currency:'USD', description:'' })
+const savForm = ref({ date:today, amount:null, currency:'USD', description:'' })
 
     // ── 1. getFilteredExpenses ──────────────────────
     function getFilteredExpenses() {
@@ -736,6 +838,24 @@ const MONTH_OPTIONS = (() => {
       finally { expSaving.value = false }
     }
 
+    async function addSaving() {
+      if (!savForm.value.date || !savForm.value.amount) return
+      expSaving.value = true
+      try {
+        await sbFetch('/expenses', {
+          method: 'POST',
+          body: JSON.stringify({
+            date:savForm.value.date, category:'សន្សំ',
+            amount:savForm.value.amount, currency:savForm.value.currency,
+            description:savForm.value.description.trim()
+          })
+        })
+        savForm.value.amount = null; savForm.value.description = ''
+        await render()
+      } catch(err) { errorMsg.value = 'បន្ថែមមិនបាន: '+err.message }
+      finally { expSaving.value = false }
+    }
+    
     // ── addIncome ─────────────────────────────────────
     async function addIncome() {
       if (!incForm.value.date || !incForm.value.source || !incForm.value.amount) return
