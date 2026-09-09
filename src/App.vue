@@ -154,6 +154,11 @@
     <div class="glass rounded-2xl border border-white/60 shadow-sm p-4">
       <div class="flex flex-wrap items-end gap-3">
         <div class="flex-1 min-w-[130px]">
+          <label class="text-xs font-medium text-gray-500 mb-1 block">ច្រោះតាមថ្ងៃ</label>
+          <input type="date" v-model="filterDate"
+            class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition bg-white" />
+        </div>
+        <div class="flex-1 min-w-[130px]">
           <label class="text-xs font-medium text-gray-500 mb-1 block">ច្រោះតាមខែ</label>
           <select v-model="filterMonth"
             class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-400 transition bg-white">
@@ -161,7 +166,6 @@
             <option v-for="m in MONTH_OPTIONS" :key="m.value" :value="m.value">{{ m.label }}</option>
           </select>
         </div>
-
         <div class="flex-1 min-w-[130px]">
           <label class="text-xs font-medium text-gray-500 mb-1 block">ប្រភេទចំណាយ</label>
           <select v-model="filterExpCat"
@@ -186,7 +190,8 @@
           </svg>
           Reset
         </button>
-        <div class="flex gap-2 flex-wrap">
+        <div class="flex gap-2 flex-wrap w-full">
+          <span v-if="filterDate"    class="bg-blue-100 text-blue-700 text-xs px-3 py-1 rounded-full">📍 ថ្ងៃទី {{ filterDate }}</span>
           <span v-if="filterMonth"   class="bg-indigo-100 text-indigo-700 text-xs px-3 py-1 rounded-full">📅 {{ MONTH_OPTIONS.find(m=>m.value===filterMonth)?.label || filterMonth }}</span>
           <span v-if="filterExpCat"  class="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full">💸 {{ filterExpCat }}</span>
           <span v-if="filterIncSrc"  class="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full">💰 {{ filterIncSrc }}</span>
@@ -507,6 +512,7 @@ const MONTH_OPTIONS = (() => {
     const errorMsg  = ref('')
     const activeTab = ref('expense')
 
+    const filterDate   = ref('')
     const filterMonth  = ref('')
     const filterExpCat = ref('')
     const filterIncSrc = ref('')
@@ -522,16 +528,18 @@ const MONTH_OPTIONS = (() => {
     // ── 1. getFilteredExpenses ──────────────────────
     function getFilteredExpenses() {
       return expenses.value.filter(e => {
+        const okD = !filterDate.value   || e.date === filterDate.value
         const okM = !filterMonth.value  || e.date.startsWith(filterMonth.value)
         const okC = !filterExpCat.value || e.category === filterExpCat.value
-        return okM && okC
+        return okD && okM && okC
       })
     }
     function getFilteredIncomes() {
       return incomes.value.filter(i => {
+        const okD = !filterDate.value   || i.date === filterDate.value
         const okM = !filterMonth.value  || i.date.startsWith(filterMonth.value)
         const okS = !filterIncSrc.value || i.source === filterIncSrc.value
-        return okM && okS
+        return okD && okM && okS
       })
     }
     const filteredExpenses = computed(getFilteredExpenses)
@@ -708,12 +716,12 @@ const MONTH_OPTIONS = (() => {
     }
 
     // ── 6. Filter watch ──────────────────────────────
-    watch([filterMonth, filterExpCat, filterIncSrc], async () => {
+    watch([filterDate, filterMonth, filterExpCat, filterIncSrc], async () => {
       await nextTick()
       updateDoughnut(getFilteredExpenses())
     })
     function resetFilters() {
-      filterMonth.value = ''; filterExpCat.value = ''; filterIncSrc.value = ''
+      filterDate.value = ''; filterMonth.value = ''; filterExpCat.value = ''; filterIncSrc.value = ''
     }
 
     // ── 7. exportCSV ─────────────────────────────────
