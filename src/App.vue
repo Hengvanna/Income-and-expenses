@@ -43,7 +43,7 @@
     </div>
 
     <!-- ══ SUMMARY CARDS ════════════════════════════════ -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
       <!-- Total Income USD -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade">
         <div class="flex items-center justify-between mb-2">
@@ -91,6 +91,19 @@
         </div>
         <p class="text-2xl font-bold text-red-500">{{ totalExpenseKHR.toLocaleString() }}</p>
         <p class="text-[10px] text-gray-400 mt-0.5">រៀល</p>
+      </div>
+      <!-- Today's Expense -->
+      <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-gray-500">ចំណាយថ្ងៃនេះ</p>
+          <span class="w-8 h-8 bg-orange-100 rounded-lg grid place-items-center">
+            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+          </span>
+        </div>
+        <p class="text-xl font-bold text-orange-500">${{ todayExpenseUSD.toFixed(2) }}</p>
+        <p class="text-[11px] font-bold text-orange-400 mt-0.5">{{ todayExpenseKHR.toLocaleString() }} ៛</p>
       </div>
       <!-- Net Balance USD -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade"
@@ -533,6 +546,14 @@ const MONTH_OPTIONS = (() => {
       filteredIncomes.value.filter(i=>i.currency==='USD').reduce((s,i)=>s+Number(i.amount),0))
     const totalIncomeKHR  = computed(() =>
       filteredIncomes.value.filter(i=>i.currency==='KHR').reduce((s,i)=>s+Number(i.amount),0))
+    
+    // Today's Expenses
+    const todayStr = new Date().toISOString().slice(0,10)
+    const todayExpenseUSD = computed(() =>
+      expenses.value.filter(e=>e.date===todayStr && e.currency==='USD').reduce((s,e)=>s+Number(e.amount),0))
+    const todayExpenseKHR = computed(() =>
+      expenses.value.filter(e=>e.date===todayStr && e.currency==='KHR').reduce((s,e)=>s+Number(e.amount),0))
+
     const netUSD = computed(() =>
       (totalIncomeUSD.value + totalIncomeKHR.value/KHR)
       - (totalExpenseUSD.value + totalExpenseKHR.value/KHR))
