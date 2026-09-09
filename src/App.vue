@@ -139,8 +139,7 @@
         </button>
       </div>
       <div v-if="editGoal" class="flex gap-2 mb-4 fade">
-        <input type="number" v-model.number="tempGoal" placeholder="បញ្ចូលទឹកប្រាក់ (USD)..." 
-          class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300" />
+        <input type="number" v-model.number="tempGoal" placeholder="Goal (USD)" class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300" />
         <button @click="saveGoal" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl shadow-sm transition">
           រក្សាទុក
         </button>
@@ -572,365 +571,154 @@
 </template>
 
 <script setup>
-
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import Chart from 'chart.js/auto'
 
-// ── Supabase REST ────────────────────────────
 const SB_URL = import.meta.env.VITE_SUPABASE_URL
 const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-const SB_H   = {
-  'apikey':        SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type':  'application/json',
-  'Prefer':        'return=representation',
-}
-async function sbFetch(path, opts = {}) {
-  const res = await fetch(SB_URL + '/rest/v1' + path, {
-    ...opts, headers: { ...SB_H, ...(opts.headers || {}) }
-  })
-  if (!res.ok) {
-    const e = await res.json().catch(() => ({}))
-    throw new Error(e.message || e.hint || res.statusText)
-  }
-  const t = await res.text()
-  return t ? JSON.parse(t) : []
-}
+const SB_H   = { 'apikey': SB_KEY, 'Authorization': 'Bearer '+SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'return=representation' }
 
 const KHR = 4100
-
-// Categories / Sources
-const EXP_CATS   = ['អាហារ','សេវាសង្គម','ការសិក្សា','ចរាចរណ៍','សុខភាព','កំសាន្ត','ផ្ទះ','សន្សំ','ផ្សេងៗ']
+const EXP_CATS    = ['អាហារ','សេវាសង្គម','ការសិក្សា','ចរាចរណ៍','សុខភាព','កំសាន្ត','ផ្ទះ','ផ្សេងៗ']
 const INC_SOURCES = ['ប្រាក់បៀវត្ស','អាជីវកម្ម','Freelance','ការវិនិយោគ','ជួលទ្រព្យ','អំណោយ','ផ្សេងៗ']
-
-const EXP_COLORS = {
-  'អាហារ':'bg-amber-100 text-amber-700','សេវាសង្គម':'bg-pink-100 text-pink-700',
-  'ការសិក្សា':'bg-blue-100 text-blue-700','ចរាចរណ៍':'bg-green-100 text-green-700',
-  'សុខភាព':'bg-red-100 text-red-700','កំសាន្ត':'bg-purple-100 text-purple-700',
-  'ផ្ទះ':'bg-indigo-100 text-indigo-700','សន្សំ':'bg-blue-100 text-blue-700','ផ្សេងៗ':'bg-gray-100 text-gray-700',
-}
-const INC_COLORS = {
-  'ប្រាក់បៀវត្ស':'bg-emerald-100 text-emerald-700','អាជីវកម្ម':'bg-teal-100 text-teal-700',
-  'Freelance':'bg-cyan-100 text-cyan-700','ការវិនិយោគ':'bg-blue-100 text-blue-700',
-  'ជួលទ្រព្យ':'bg-violet-100 text-violet-700','អំណោយ':'bg-rose-100 text-rose-700',
-  'ផ្សេងៗ':'bg-gray-100 text-gray-600',
-}
-
+const EXP_COLORS  = { 'អាហារ':'bg-amber-100 text-amber-700','សេវាសង្គម':'bg-pink-100 text-pink-700','ការសិក្សា':'bg-blue-100 text-blue-700','ចរាចរណ៍':'bg-green-100 text-green-700','សុខភាព':'bg-red-100 text-red-700','កំសាន្ត':'bg-purple-100 text-purple-700','ផ្ទះ':'bg-indigo-100 text-indigo-700','ផ្សេងៗ':'bg-gray-100 text-gray-700','សន្សំ':'bg-blue-100 text-blue-700' }
+const INC_COLORS  = { 'ប្រាក់បៀវត្ស':'bg-emerald-100 text-emerald-700','អាជីវកម្ម':'bg-teal-100 text-teal-700','Freelance':'bg-cyan-100 text-cyan-700','ការវិនិយោគ':'bg-blue-100 text-blue-700','ជួលទ្រព្យ':'bg-violet-100 text-violet-700','អំណោយ':'bg-rose-100 text-rose-700','ផ្សេងៗ':'bg-gray-100 text-gray-600' }
 const CHART_COLORS = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#ec4899','#14b8a6','#6366f1']
-
-// ── Static month dropdown list (last 24 months) ──────
-const KHM_MONTHS = [
-  'មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា',
-  'កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ'
-]
+const KHM_MONTHS = ['មករា','កុម្ភៈ','មីនា','មេសា','ឧសភា','មិថុនា','កក្កដា','សីហា','កញ្ញា','តុលា','វិច្ឆិកា','ធ្នូ']
 const MONTH_OPTIONS = (() => {
-  const opts = []
-  const now  = new Date()
+  const opts = [], now = new Date()
   for (let i = 0; i < 24; i++) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
-    const y = d.getFullYear()
-    const m = d.getMonth()   // 0-based
-    opts.push({
-      value: `${y}-${String(m + 1).padStart(2, '0')}`,
-      label: `${KHM_MONTHS[m]} ${y}`
-    })
+    opts.push({ value: d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'), label: KHM_MONTHS[d.getMonth()]+' '+d.getFullYear() })
   }
   return opts
 })()
 
+async function sbFetch(path, opts = {}) {
+  const res = await fetch(SB_URL + '/rest/v1' + path, { ...opts, headers: { ...SB_H, ...(opts.headers||{}) } })
+  if (!res.ok) { const e = await res.json().catch(()=>({})); throw new Error(e.message||e.hint||res.statusText) }
+  const t = await res.text(); return t ? JSON.parse(t) : []
+}
 
-    // State
-    const expenses = ref([])
-    const incomes  = ref([])
-    const loading  = ref(false)
-    const expSaving = ref(false)
-    const incSaving = ref(false)
-    const errorMsg  = ref('')
-    const activeTab = ref('expense')
+// State
+const expenses  = ref([])
+const incomes   = ref([])
+const loading   = ref(true)
+const expSaving = ref(false)
+const incSaving = ref(false)
+const errorMsg  = ref('')
+const activeTab = ref('expense')
+const filterDate   = ref('')
+const filterMonth  = ref('')
+const filterExpCat = ref('')
+const filterIncSrc = ref('')
+const today   = new Date().toISOString().slice(0,10)
+const expForm = ref({ date:today, category:'', amount:null, currency:'USD', description:'' })
+const incForm = ref({ date:today, source:'',   amount:null, currency:'USD', description:'' })
+const savForm = ref({ date:today,              amount:null, currency:'USD', description:'' })
+let doughnutInst = null, barInst = null
 
-    const filterDate   = ref('')
-    const filterMonth  = ref('')
-    const filterExpCat = ref('')
-    const filterIncSrc = ref('')
+// Filters
+function getFilteredExpenses() {
+  return expenses.value.filter(e => {
+    const okD = !filterDate.value   || e.date === filterDate.value
+    const okM = !filterMonth.value  || e.date.startsWith(filterMonth.value)
+    const okC = !filterExpCat.value || e.category === filterExpCat.value
+    return okD && okM && okC
+  })
+}
+function getFilteredIncomes() {
+  return incomes.value.filter(i => {
+    const okD = !filterDate.value   || i.date === filterDate.value
+    const okM = !filterMonth.value  || i.date.startsWith(filterMonth.value)
+    const okS = !filterIncSrc.value || i.source === filterIncSrc.value
+    return okD && okM && okS
+  })
+}
+const filteredExpenses     = computed(getFilteredExpenses)
+const filteredIncomes      = computed(getFilteredIncomes)
+const realFilteredExpenses = computed(() => filteredExpenses.value.filter(e => e.category !== 'សន្សំ'))
+const savingsExpenses      = computed(() => filteredExpenses.value.filter(e => e.category === 'សន្សំ'))
 
-    let doughnutInst = null
-    let barInst      = null
+// Totals
+const totalExpenseUSD = computed(() => realFilteredExpenses.value.filter(e=>e.currency==='USD').reduce((s,e)=>s+Number(e.amount),0))
+const totalExpenseKHR = computed(() => realFilteredExpenses.value.filter(e=>e.currency==='KHR').reduce((s,e)=>s+Number(e.amount),0))
+const totalIncomeUSD  = computed(() => filteredIncomes.value.filter(i=>i.currency==='USD').reduce((s,i)=>s+Number(i.amount),0))
+const totalIncomeKHR  = computed(() => filteredIncomes.value.filter(i=>i.currency==='KHR').reduce((s,i)=>s+Number(i.amount),0))
+const todayStr        = new Date().toISOString().slice(0,10)
+const todayExpenseUSD = computed(() => expenses.value.filter(e=>e.date===todayStr&&e.currency==='USD'&&e.category!=='សន្សំ').reduce((s,e)=>s+Number(e.amount),0))
+const todayExpenseKHR = computed(() => expenses.value.filter(e=>e.date===todayStr&&e.currency==='KHR'&&e.category!=='សន្សំ').reduce((s,e)=>s+Number(e.amount),0))
+const totalSavedUSD   = computed(() => expenses.value.filter(e=>e.category==='សន្សំ').reduce((s,e)=>s+(e.currency==='USD'?Number(e.amount):Number(e.amount)/KHR),0))
+const netUSD = computed(() => (totalIncomeUSD.value+totalIncomeKHR.value/KHR) - expenses.value.reduce((s,e)=>s+(e.currency==='USD'?Number(e.amount):Number(e.amount)/KHR),0))
 
-    // Forms
-    const today = new Date().toISOString().slice(0,10)
-    const expForm = ref({ date:today, category:'', amount:null, currency:'USD', description:'' })
-    const incForm = ref({ date:today, source:'',   amount:null, currency:'USD', description:'' })
-const savForm = ref({ date:today, amount:null, currency:'USD', description:'' })
+// Savings Goal
+const savingsGoal    = ref(Number(localStorage.getItem('expense_savings_goal'))||1000)
+const tempGoal       = ref(savingsGoal.value)
+const editGoal       = ref(false)
+const savingsPercent = computed(() => { const p=(totalSavedUSD.value/savingsGoal.value)*100; return p>100?100:(p<0?0:p) })
+function saveGoal() { if(tempGoal.value>0){ savingsGoal.value=tempGoal.value; localStorage.setItem('expense_savings_goal',savingsGoal.value); editGoal.value=false } }
 
-    // ── 1. getFilteredExpenses ──────────────────────
-    function getFilteredExpenses() {
-      return expenses.value.filter(e => {
-        const okD = !filterDate.value   || e.date === filterDate.value
-        const okM = !filterMonth.value  || e.date.startsWith(filterMonth.value)
-        const okC = !filterExpCat.value || e.category === filterExpCat.value
-        return okD && okM && okC
-      })
-    }
-    function getFilteredIncomes() {
-      return incomes.value.filter(i => {
-        const okD = !filterDate.value   || i.date === filterDate.value
-        const okM = !filterMonth.value  || i.date.startsWith(filterMonth.value)
-        const okS = !filterIncSrc.value || i.source === filterIncSrc.value
-        return okD && okM && okS
-      })
-    }
-    const filteredExpenses = computed(getFilteredExpenses)
-    const filteredIncomes  = computed(getFilteredIncomes)
+// Charts
+function updateDoughnut(data) {
+  const totals={}, canvas=document.getElementById('doughnutChart')
+  data.forEach(e=>{ const u=e.currency==='KHR'?Number(e.amount)/KHR:Number(e.amount); totals[e.category]=(totals[e.category]||0)+u })
+  const labels=Object.keys(totals), vals=Object.values(totals)
+  if(doughnutInst){doughnutInst.destroy();doughnutInst=null}
+  if(!canvas||!labels.length) return
+  doughnutInst=new Chart(canvas,{ type:'doughnut', data:{ labels, datasets:[{ data:vals, backgroundColor:labels.map((_,i)=>CHART_COLORS[i%CHART_COLORS.length]), borderColor:'#fff', borderWidth:3 }] }, options:{ responsive:true,maintainAspectRatio:false,cutout:'62%', plugins:{ legend:{position:'bottom',labels:{font:{family:'Kantumruy Pro',size:10},color:'#6b7280',padding:8,usePointStyle:true}}, tooltip:{callbacks:{label:ctx=>{ const t=ctx.dataset.data.reduce((a,b)=>a+b,0); return ' $'+ctx.parsed.toFixed(2)+' ('+((ctx.parsed/t)*100).toFixed(1)+'%)' }}} } } })
+}
+function updateBar() {
+  const months={}, canvas=document.getElementById('barChart')
+  ;[...incomes.value.map(i=>({...i,_t:'income'})),...expenses.value.map(e=>({...e,_t:'expense'}))].forEach(item=>{ const m=item.date.slice(0,7); if(!months[m])months[m]={income:0,expense:0}; const u=item.currency==='KHR'?Number(item.amount)/KHR:Number(item.amount); if(item._t==='income')months[m].income+=u; else months[m].expense+=u })
+  const sm=Object.keys(months).sort()
+  if(barInst){barInst.destroy();barInst=null}
+  if(!canvas||!sm.length) return
+  barInst=new Chart(canvas,{ type:'bar', data:{ labels:sm, datasets:[{label:'ចំណូល',data:sm.map(m=>+months[m].income.toFixed(2)),backgroundColor:'#10b981cc',borderRadius:6,borderSkipped:false},{label:'ចំណាយ',data:sm.map(m=>+months[m].expense.toFixed(2)),backgroundColor:'#ef4444cc',borderRadius:6,borderSkipped:false}] }, options:{ responsive:true,maintainAspectRatio:false, plugins:{legend:{labels:{font:{family:'Kantumruy Pro',size:11},color:'#4b5563',usePointStyle:true}}}, scales:{x:{ticks:{font:{family:'Kantumruy Pro',size:10},color:'#9ca3af'},grid:{display:false}},y:{ticks:{font:{family:'Kantumruy Pro',size:10},color:'#9ca3af'},grid:{color:'#f1f5f9'}}} } })
+}
 
-    // Totals
-    const totalExpenseUSD = computed(() =>
-      filteredExpenses.value.filter(e=>e.currency==='USD').reduce((s,e)=>s+Number(e.amount),0))
-    const totalExpenseKHR = computed(() =>
-      filteredExpenses.value.filter(e=>e.currency==='KHR').reduce((s,e)=>s+Number(e.amount),0))
-    const totalIncomeUSD  = computed(() =>
-      filteredIncomes.value.filter(i=>i.currency==='USD').reduce((s,i)=>s+Number(i.amount),0))
-    const totalIncomeKHR  = computed(() =>
-      filteredIncomes.value.filter(i=>i.currency==='KHR').reduce((s,i)=>s+Number(i.amount),0))
-    
-    // Today's Expenses
-    const todayStr = new Date().toISOString().slice(0,10)
-    const todayExpenseUSD = computed(() =>
-      expenses.value.filter(e=>e.date===todayStr && e.currency==='USD').reduce((s,e)=>s+Number(e.amount),0))
-    const todayExpenseKHR = computed(() =>
-      expenses.value.filter(e=>e.date===todayStr && e.currency==='KHR').reduce((s,e)=>s+Number(e.amount),0))
+// CRUD
+async function render() {
+  loading.value=true; errorMsg.value=''
+  try {
+    const [expData,incData]=await Promise.all([sbFetch('/expenses?select=*&order=date.desc'),sbFetch('/incomes?select=*&order=date.desc')])
+    expenses.value=expData; incomes.value=incData
+    await nextTick(); updateDoughnut(realFilteredExpenses.value); updateBar()
+  } catch(err){ console.error(err); errorMsg.value='Error: '+err.message } finally{loading.value=false}
+}
+async function addExpense() {
+  if(!expForm.value.date||!expForm.value.category||!expForm.value.amount) return
+  expSaving.value=true
+  try { await sbFetch('/expenses',{method:'POST',body:JSON.stringify({date:expForm.value.date,category:expForm.value.category,amount:expForm.value.amount,currency:expForm.value.currency,description:expForm.value.description.trim()})}); expForm.value.amount=null; expForm.value.description=''; await render() } catch(err){errorMsg.value='បន្ថែមមិនបាន: '+err.message} finally{expSaving.value=false}
+}
+async function addSaving() {
+  if(!savForm.value.date||!savForm.value.amount) return
+  expSaving.value=true
+  try { await sbFetch('/expenses',{method:'POST',body:JSON.stringify({date:savForm.value.date,category:'សន្សំ',amount:savForm.value.amount,currency:savForm.value.currency,description:savForm.value.description.trim()})}); savForm.value.amount=null; savForm.value.description=''; await render() } catch(err){errorMsg.value='បន្ថែមមិនបាន: '+err.message} finally{expSaving.value=false}
+}
+async function addIncome() {
+  if(!incForm.value.date||!incForm.value.source||!incForm.value.amount) return
+  incSaving.value=true
+  try { await sbFetch('/incomes',{method:'POST',body:JSON.stringify({date:incForm.value.date,source:incForm.value.source,amount:incForm.value.amount,currency:incForm.value.currency,description:incForm.value.description.trim()})}); incForm.value.amount=null; incForm.value.description=''; await render() } catch(err){errorMsg.value='បន្ថែមមិនបាន: '+err.message} finally{incSaving.value=false}
+}
+async function deleteExpense(id) { if(!confirm('លុបរបស់នេះ?'))return; try{await sbFetch('/expenses?id=eq.'+id,{method:'DELETE',headers:{'Prefer':''}}); await render()}catch(err){errorMsg.value='លុបមិនបាន: '+err.message} }
+async function deleteIncome(id)  { if(!confirm('លុបចំណូលនេះ?'))return; try{await sbFetch('/incomes?id=eq.'+id,{method:'DELETE',headers:{'Prefer':''}}); await render()}catch(err){errorMsg.value='លុបមិនបាន: '+err.message} }
 
-    const netUSD = computed(() =>
-      (totalIncomeUSD.value + totalIncomeKHR.value/KHR)
-      - (totalExpenseUSD.value + totalExpenseKHR.value/KHR))
+watch([filterDate,filterMonth,filterExpCat,filterIncSrc], async()=>{ await nextTick(); updateDoughnut(realFilteredExpenses.value) })
+function resetFilters() { filterDate.value=''; filterMonth.value=''; filterExpCat.value=''; filterIncSrc.value='' }
 
-    // Savings Goal
-    const totalSavedUSD = computed(() => expenses.value.filter(e => e.category === 'សន្សំ').reduce((s,e) => s + (e.currency === 'USD' ? Number(e.amount) : Number(e.amount)/KHR), 0))
-    const savingsGoal = ref(Number(localStorage.getItem('expense_savings_goal')) || 1000)
-    const tempGoal = ref(savingsGoal.value)
-    const editGoal = ref(false)
-    
-    const savingsPercent = computed(() => {
-      if (savingsGoal.value <= 0) return 100
-      const saved = totalSavedUSD.value
-      const p = (saved / savingsGoal.value) * 100
-      return p > 100 ? 100 : p
-    })
-    
-    function saveGoal() {
-      if (tempGoal.value > 0) {
-        savingsGoal.value = tempGoal.value
-        localStorage.setItem('expense_savings_goal', savingsGoal.value)
-        editGoal.value = false
-      }
-    }
+function exportCSV() {
+  const rows=[...getFilteredExpenses().filter(e=>e.category!=='សន្សំ').map(e=>['ចំណាយ',e.date,e.category,e.amount,e.currency,'"'+(e.description||'').replace(/"/g,'""')+'"'].join(',')),...getFilteredExpenses().filter(e=>e.category==='សន្សំ').map(e=>['សន្សំ',e.date,'សន្សំ',e.amount,e.currency,'"'+(e.description||'').replace(/"/g,'""')+'"'].join(',')),...getFilteredIncomes().map(i=>['ចំណូល',i.date,i.source,i.amount,i.currency,'"'+(i.description||'').replace(/"/g,'""')+'"'].join(','))]
+  if(!rows.length){alert('មិនមានទិន្នន័យ!');return}
+  const csv=['ប្រភេទ,កាលបរិច្ឆេទ,ប្រភព/ប្រភេទ,ចំនួន,រូបិយប័ណ្ណ,ការពិពណ៌នា',...rows].join('\n')
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'})
+  const url=URL.createObjectURL(blob)
+  const a=Object.assign(document.createElement('a'),{href:url,download:'Income_Expense_'+new Date().toISOString().slice(0,10)+'.csv'})
+  document.body.appendChild(a);a.click();document.body.removeChild(a);URL.revokeObjectURL(url)
+}
 
-    // ── 2. updateChart ──────────────────────────────
-    function updateDoughnut(data) {
-      const totals = {}
-      data.forEach(e => {
-        const u = e.currency==='KHR' ? Number(e.amount)/KHR : Number(e.amount)
-        totals[e.category] = (totals[e.category]||0) + u
-      })
-      const labels = Object.keys(totals)
-      const vals   = Object.values(totals)
-      const colors = labels.map((_,i)=>CHART_COLORS[i%CHART_COLORS.length])
-      const canvas = document.getElementById('doughnutChart')
-      if (!canvas) return
-      if (doughnutInst) { doughnutInst.destroy(); doughnutInst = null }
-      if (!labels.length) return
-      doughnutInst = new Chart(canvas, {
-        type: 'doughnut',
-        data: { labels, datasets:[{ data:vals, backgroundColor:colors, borderColor:'#fff', borderWidth:3 }] },
-        options: {
-          responsive:true, maintainAspectRatio:false, cutout:'62%',
-          plugins: {
-            legend: { position:'bottom', labels:{ font:{family:'Kantumruy Pro',size:10}, color:'#6b7280', padding:8, usePointStyle:true } },
-            tooltip: { callbacks:{ label: ctx => {
-              const t = ctx.dataset.data.reduce((a,b)=>a+b,0)
-              return ` $${ctx.parsed.toFixed(2)} (${((ctx.parsed/t)*100).toFixed(1)}%)`
-            }}}
-          }
-        }
-      })
-    }
+function fmtDate(d) { return new Date(d+'T00:00').toLocaleDateString('km-KH',{year:'numeric',month:'short',day:'numeric'}) }
+function expCatColor(c) { return EXP_COLORS[c]||'bg-gray-100 text-gray-600' }
+function incSrcColor(s) { return INC_COLORS[s]||'bg-gray-100 text-gray-600' }
 
-    function updateBar() {
-      // Group income & expense by YYYY-MM
-      const months = {}
-      const allItems = [
-        ...incomes.value.map(i=>({...i, _type:'income'})),
-        ...expenses.value.map(e=>({...e, _type:'expense'}))
-      ]
-      allItems.forEach(item => {
-        const m = item.date.slice(0,7)
-        if (!months[m]) months[m] = { income:0, expense:0 }
-        const u = item.currency==='KHR' ? Number(item.amount)/KHR : Number(item.amount)
-        if (item._type==='income')  months[m].income  += u
-        else                        months[m].expense += u
-      })
-      const sortedMonths = Object.keys(months).sort()
-      const incData = sortedMonths.map(m=>+months[m].income.toFixed(2))
-      const expData = sortedMonths.map(m=>+months[m].expense.toFixed(2))
-      const canvas = document.getElementById('barChart')
-      if (!canvas) return
-      if (barInst) { barInst.destroy(); barInst = null }
-      if (!sortedMonths.length) return
-      barInst = new Chart(canvas, {
-        type: 'bar',
-        data: {
-          labels: sortedMonths,
-          datasets: [
-            { label:'ចំណូល', data:incData, backgroundColor:'#10b981cc', borderRadius:6, borderSkipped:false },
-            { label:'ចំណាយ', data:expData, backgroundColor:'#ef4444cc', borderRadius:6, borderSkipped:false },
-          ]
-        },
-        options: {
-          responsive:true, maintainAspectRatio:false,
-          plugins: {
-            legend: { labels:{ font:{family:'Kantumruy Pro',size:11}, color:'#4b5563', usePointStyle:true } }
-          },
-          scales: {
-            x: { ticks:{ font:{family:'Kantumruy Pro',size:10}, color:'#9ca3af' }, grid:{display:false} },
-            y: { ticks:{ font:{family:'Kantumruy Pro',size:10}, color:'#9ca3af' }, grid:{color:'#f1f5f9'} }
-          }
-        }
-      })
-    }
-
-    // ── 3. render ────────────────────────────────────
-    async function render() {
-      loading.value  = true
-      errorMsg.value = ''
-      try {
-        const [expData, incData] = await Promise.all([
-          sbFetch('/expenses?select=*&order=date.desc'),
-          sbFetch('/incomes?select=*&order=date.desc'),
-        ])
-        expenses.value = expData
-        incomes.value  = incData
-        await nextTick()
-        updateDoughnut(getFilteredExpenses())
-        updateBar()
-      } catch(err) {
-        console.error(err)
-        errorMsg.value = 'Error: ' + err.message
-      } finally {
-        loading.value = false
-      }
-    }
-
-    // ── 4. addExpense ────────────────────────────────
-    async function addExpense() {
-      if (!expForm.value.date || !expForm.value.category || !expForm.value.amount) return
-      expSaving.value = true
-      try {
-        await sbFetch('/expenses', {
-          method: 'POST',
-          body: JSON.stringify({
-            date:expForm.value.date, category:expForm.value.category,
-            amount:expForm.value.amount, currency:expForm.value.currency,
-            description:expForm.value.description.trim()
-          })
-        })
-        expForm.value.amount = null; expForm.value.description = ''
-        await render()
-      } catch(err) { errorMsg.value = 'បន្ថែមមិនបាន: '+err.message }
-      finally { expSaving.value = false }
-    }
-
-    async function addSaving() {
-      if (!savForm.value.date || !savForm.value.amount) return
-      expSaving.value = true
-      try {
-        await sbFetch('/expenses', {
-          method: 'POST',
-          body: JSON.stringify({
-            date:savForm.value.date, category:'សន្សំ',
-            amount:savForm.value.amount, currency:savForm.value.currency,
-            description:savForm.value.description.trim()
-          })
-        })
-        savForm.value.amount = null; savForm.value.description = ''
-        await render()
-      } catch(err) { errorMsg.value = 'បន្ថែមមិនបាន: '+err.message }
-      finally { expSaving.value = false }
-    }
-    
-    // ── addIncome ─────────────────────────────────────
-    async function addIncome() {
-      if (!incForm.value.date || !incForm.value.source || !incForm.value.amount) return
-      incSaving.value = true
-      try {
-        await sbFetch('/incomes', {
-          method: 'POST',
-          body: JSON.stringify({
-            date:incForm.value.date, source:incForm.value.source,
-            amount:incForm.value.amount, currency:incForm.value.currency,
-            description:incForm.value.description.trim()
-          })
-        })
-        incForm.value.amount = null; incForm.value.description = ''
-        await render()
-      } catch(err) { errorMsg.value = 'បន្ថែមមិនបាន: '+err.message }
-      finally { incSaving.value = false }
-    }
-
-    // ── 5. deleteExpense / deleteIncome ──────────────
-    async function deleteExpense(id) {
-      if (!confirm('លុបចំណាយនេះ?')) return
-      try {
-        await sbFetch('/expenses?id=eq.'+id, { method:'DELETE', headers:{'Prefer':''} })
-        await render()
-      } catch(err) { errorMsg.value = 'លុបមិនបាន: '+err.message }
-    }
-    async function deleteIncome(id) {
-      if (!confirm('លុបចំណូលនេះ?')) return
-      try {
-        await sbFetch('/incomes?id=eq.'+id, { method:'DELETE', headers:{'Prefer':''} })
-        await render()
-      } catch(err) { errorMsg.value = 'លុបមិនបាន: '+err.message }
-    }
-
-    // ── 6. Filter watch ──────────────────────────────
-    watch([filterDate, filterMonth, filterExpCat, filterIncSrc], async () => {
-      await nextTick()
-      updateDoughnut(getFilteredExpenses())
-    })
-    function resetFilters() {
-      filterDate.value = ''; filterMonth.value = ''; filterExpCat.value = ''; filterIncSrc.value = ''
-    }
-
-    // ── 7. exportCSV ─────────────────────────────────
-    function exportCSV() {
-      const expRows = getFilteredExpenses().map(e=>
-        ['ចំណាយ', e.date, e.category, e.amount, e.currency, `"${(e.description||'').replace(/"/g,'""')}"`].join(',')
-      )
-      const incRows = getFilteredIncomes().map(i=>
-        ['ចំណូល', i.date, i.source, i.amount, i.currency, `"${(i.description||'').replace(/"/g,'""')}"`].join(',')
-      )
-      if (!expRows.length && !incRows.length) { alert('មិនមានទិន្នន័យ!'); return }
-      const header = 'ប្រភេទ,កាលបរិច្ឆេទ,ប្រភព/ប្រភេទ,ចំនួន,រូបិយប័ណ្ណ,ការពិពណ៌នា'
-      const csv = [header, ...expRows, ...incRows].join('\n')
-      const blob = new Blob(['\uFEFF'+csv], {type:'text/csv;charset=utf-8'})
-      const url = URL.createObjectURL(blob)
-      const a = Object.assign(document.createElement('a'), {
-        href:url, download:`ចំណូល_ចំណាយ_${new Date().toISOString().slice(0,10)}.csv`
-      })
-      document.body.appendChild(a); a.click()
-      document.body.removeChild(a); URL.revokeObjectURL(url)
-    }
-
-    // Helpers
-    function fmtDate(d) {
-      return new Date(d+'T00:00').toLocaleDateString('km-KH',
-        {year:'numeric',month:'short',day:'numeric'})
-    }
-    function expCatColor(c) { return EXP_COLORS[c]||'bg-gray-100 text-gray-600' }
-    function incSrcColor(s) { return INC_COLORS[s]||'bg-gray-100 text-gray-600' }
-
-    onMounted(render)
-
-
-    
-
+onMounted(render)
 </script>
