@@ -128,6 +128,37 @@
       </div>
     </div>
 
+    <!-- ══ SAVINGS GOAL ════════════════════════════════ -->
+    <div class="glass rounded-2xl border border-white/60 shadow-sm p-5 fade">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+          <span class="text-lg">🎯</span> គោលដៅសន្សំប្រាក់ (Savings Goal)
+        </h3>
+        <button @click="editGoal = !editGoal" class="text-xs text-indigo-500 hover:bg-indigo-50 px-2 py-1 rounded transition">
+          {{ editGoal ? 'បិទ' : 'កែប្រែគោលដៅ' }}
+        </button>
+      </div>
+      <div v-if="editGoal" class="flex gap-2 mb-4 fade">
+        <input type="number" v-model.number="tempGoal" placeholder="បញ្ចូលទឹកប្រាក់ (USD)..." 
+          class="flex-1 px-3 py-2 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-300" />
+        <button @click="saveGoal" class="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl shadow-sm transition">
+          រក្សាទុក
+        </button>
+      </div>
+      
+      <div class="relative w-full h-5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+        <div class="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-400 to-indigo-500 transition-all duration-1000 ease-out"
+          :style="{ width: savingsPercent + '%' }"></div>
+        <div class="absolute inset-0 flex items-center justify-center text-[10px] font-bold text-white mix-blend-difference drop-shadow-md">
+          {{ savingsPercent.toFixed(1) }}%
+        </div>
+      </div>
+      <div class="flex justify-between items-center mt-2 text-xs font-medium">
+        <span class="text-emerald-600">សន្សំបាន៖ ${{ Math.max(0, netUSD).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) }}</span>
+        <span class="text-indigo-600">គោលដៅ៖ ${{ savingsGoal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) }}</span>
+      </div>
+    </div>
+
     <!-- ══ CHARTS ROW ═══════════════════════════════════ -->
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
       <!-- Bar chart: Income vs Expense by month -->
@@ -565,6 +596,26 @@ const MONTH_OPTIONS = (() => {
     const netUSD = computed(() =>
       (totalIncomeUSD.value + totalIncomeKHR.value/KHR)
       - (totalExpenseUSD.value + totalExpenseKHR.value/KHR))
+
+    // Savings Goal
+    const savingsGoal = ref(Number(localStorage.getItem('expense_savings_goal')) || 1000)
+    const tempGoal = ref(savingsGoal.value)
+    const editGoal = ref(false)
+    
+    const savingsPercent = computed(() => {
+      if (savingsGoal.value <= 0) return 100
+      const saved = Math.max(0, netUSD.value)
+      const p = (saved / savingsGoal.value) * 100
+      return p > 100 ? 100 : p
+    })
+    
+    function saveGoal() {
+      if (tempGoal.value > 0) {
+        savingsGoal.value = tempGoal.value
+        localStorage.setItem('expense_savings_goal', savingsGoal.value)
+        editGoal.value = false
+      }
+    }
 
     // ── 2. updateChart ──────────────────────────────
     function updateDoughnut(data) {
