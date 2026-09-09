@@ -154,7 +154,7 @@
         </div>
       </div>
       <div class="flex justify-between items-center mt-2 text-xs font-medium">
-        <span class="text-emerald-600">សន្សំបាន៖ ${{ Math.max(0, netUSD).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) }}</span>
+        <span class="text-emerald-600">សន្សំបាន៖ ${{ totalSavedUSD.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) }}</span>
         <span class="text-indigo-600">គោលដៅ៖ ${{ savingsGoal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2}) }}</span>
       </div>
     </div>
@@ -499,14 +499,14 @@ async function sbFetch(path, opts = {}) {
 const KHR = 4100
 
 // Categories / Sources
-const EXP_CATS   = ['អាហារ','សេវាសង្គម','ការសិក្សា','ចរាចរណ៍','សុខភាព','កំសាន្ត','ផ្ទះ','ផ្សេងៗ']
+const EXP_CATS   = ['អាហារ','សេវាសង្គម','ការសិក្សា','ចរាចរណ៍','សុខភាព','កំសាន្ត','ផ្ទះ','សន្សំ','ផ្សេងៗ']
 const INC_SOURCES = ['ប្រាក់បៀវត្ស','អាជីវកម្ម','Freelance','ការវិនិយោគ','ជួលទ្រព្យ','អំណោយ','ផ្សេងៗ']
 
 const EXP_COLORS = {
   'អាហារ':'bg-amber-100 text-amber-700','សេវាសង្គម':'bg-pink-100 text-pink-700',
   'ការសិក្សា':'bg-blue-100 text-blue-700','ចរាចរណ៍':'bg-green-100 text-green-700',
   'សុខភាព':'bg-red-100 text-red-700','កំសាន្ត':'bg-purple-100 text-purple-700',
-  'ផ្ទះ':'bg-indigo-100 text-indigo-700','ផ្សេងៗ':'bg-gray-100 text-gray-700',
+  'ផ្ទះ':'bg-indigo-100 text-indigo-700','សន្សំ':'bg-blue-100 text-blue-700','ផ្សេងៗ':'bg-gray-100 text-gray-700',
 }
 const INC_COLORS = {
   'ប្រាក់បៀវត្ស':'bg-emerald-100 text-emerald-700','អាជីវកម្ម':'bg-teal-100 text-teal-700',
@@ -602,13 +602,14 @@ const MONTH_OPTIONS = (() => {
       - (totalExpenseUSD.value + totalExpenseKHR.value/KHR))
 
     // Savings Goal
+    const totalSavedUSD = computed(() => expenses.value.filter(e => e.category === 'សន្សំ').reduce((s,e) => s + (e.currency === 'USD' ? Number(e.amount) : Number(e.amount)/KHR), 0))
     const savingsGoal = ref(Number(localStorage.getItem('expense_savings_goal')) || 1000)
     const tempGoal = ref(savingsGoal.value)
     const editGoal = ref(false)
     
     const savingsPercent = computed(() => {
       if (savingsGoal.value <= 0) return 100
-      const saved = Math.max(0, netUSD.value)
+      const saved = totalSavedUSD.value
       const p = (saved / savingsGoal.value) * 100
       return p > 100 ? 100 : p
     })
