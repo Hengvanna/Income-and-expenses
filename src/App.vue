@@ -412,8 +412,8 @@ import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import Chart from 'chart.js/auto'
 
 // ── Supabase REST ────────────────────────────
-const SB_URL = 'https://ueuprbuxqpdcopipmgwm.supabase.co'
-const SB_KEY = 'sb_publishable_kF_nIv0h83KFdNVQiFCP9g__lLvf-Ec'
+const SB_URL = import.meta.env.VITE_SUPABASE_URL
+const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 const SB_H   = {
   'apikey':        SB_KEY,
   'Authorization': 'Bearer ' + SB_KEY,
