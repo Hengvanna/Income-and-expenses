@@ -43,7 +43,7 @@
     </div>
 
     <!-- ══ SUMMARY CARDS ════════════════════════════════ -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
       <!-- Total Income USD -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade">
         <div class="flex items-center justify-between mb-2">
@@ -80,6 +80,17 @@
         </div>
         <p class="text-2xl font-bold text-red-500">${{ totalExpenseUSD.toFixed(2) }}</p>
         <p class="text-[10px] text-gray-400 mt-0.5">{{ filteredExpenses.filter(e=>e.currency==='USD').length }} កំណត់ត្រា</p>
+      </div>
+      <!-- Total Expense KHR -->
+      <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade">
+        <div class="flex items-center justify-between mb-2">
+          <p class="text-xs text-gray-500">ចំណាយសរុប KHR</p>
+          <span class="w-8 h-8 bg-red-100 rounded-lg grid place-items-center">
+            <span class="text-red-500 font-bold text-sm">៛</span>
+          </span>
+        </div>
+        <p class="text-2xl font-bold text-red-500">{{ totalExpenseKHR.toLocaleString() }}</p>
+        <p class="text-[10px] text-gray-400 mt-0.5">រៀល</p>
       </div>
       <!-- Net Balance USD -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade"
