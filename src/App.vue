@@ -7,7 +7,7 @@
       <!-- Logo + Title -->
       <div class="flex items-center gap-2 sm:gap-3">
         <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-white/60 flex-shrink-0">
-          <img src="/logo.png" alt="Logo" class="w-full h-full object-contain" />
+          <img src="/logo.png" alt="Logo" class="w-full h-full object-cover scale-[1.5] origin-center" />
         </div>
         <div>
           <h1 class="font-bold text-gray-800 leading-tight text-sm sm:text-base">ចំណូល & ចំណាយ</h1>
