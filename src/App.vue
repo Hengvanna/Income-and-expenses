@@ -13,7 +13,7 @@
           </svg>
         </div>
         <div>
-          <h1 class="font-bold text-gray-800 leading-tight">ចំណូល &amp; ចំណាយ</h1>
+          <h1 class="font-bold text-gray-800 leading-tight text-sm sm:text-base">ចំណូល &amp; ចំណាយ</h1>
           <p class="text-[10px] text-gray-400">Income &amp; Expense Tracker · Supabase</p>
         </div>
       </div>
@@ -31,7 +31,7 @@
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
 
     <!-- ══ ERROR ═══════════════════════════════════════ -->
     <div v-if="errorMsg" class="fade bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl flex items-center gap-3 text-sm">
@@ -43,7 +43,7 @@
     </div>
 
     <!-- ══ SUMMARY CARDS ════════════════════════════════ -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
       <!-- Total Income USD -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-4 fade">
         <div class="flex items-center justify-between mb-2">
@@ -130,7 +130,7 @@
 
     <!-- ══ SAVINGS GOAL ════════════════════════════════ -->
     <div class="glass rounded-2xl border border-white/60 shadow-sm p-5 fade">
-      <div class="flex items-center justify-between mb-3">
+      <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
         <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
           <span class="text-lg">🎯</span> គោលដៅសន្សំប្រាក់ (Savings Goal)
         </h3>
@@ -159,7 +159,7 @@
     </div>
 
     <!-- ══ CHARTS ROW ═══════════════════════════════════ -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <!-- Bar chart: Income vs Expense by month -->
       <div class="glass rounded-2xl border border-white/60 shadow-sm p-5">
         <h3 class="text-sm font-semibold text-gray-700 mb-3">ចំណូល vs ចំណាយ (USD/ខែ)</h3>
@@ -236,7 +236,7 @@
       <div class="flex border-b border-gray-100">
         <button @click="activeTab='expense'"
           :class="activeTab==='expense' ? 'text-red-500 tab-active' : 'text-gray-400 hover:text-gray-600'"
-          class="flex-1 py-4 text-sm flex items-center justify-center gap-2 transition-colors">
+          class="flex-1 py-3 sm:py-4 text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
@@ -246,7 +246,7 @@
         </button>
         <button @click="activeTab='saving'"
           :class="activeTab==='saving' ? 'text-blue-500 tab-active' : 'text-gray-400 hover:text-gray-600'"
-          class="flex-1 py-4 text-sm flex items-center justify-center gap-2 transition-colors">
+          class="flex-1 py-3 sm:py-4 text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
@@ -255,7 +255,7 @@
         </button>
         <button @click="activeTab='income'"
           :class="activeTab==='income' ? 'text-emerald-500 tab-active' : 'text-gray-400 hover:text-gray-600'"
-          class="flex-1 py-4 text-sm flex items-center justify-center gap-2 transition-colors">
+          class="flex-1 py-3 sm:py-4 text-xs sm:text-sm flex items-center justify-center gap-1 sm:gap-2 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
@@ -273,7 +273,7 @@
             <span class="w-5 h-5 rounded-md bg-red-100 text-red-500 grid place-items-center text-xs">+</span>
             បន្ថែមចំណាយថ្មី
           </h3>
-          <form @submit.prevent="addExpense" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <form @submit.prevent="addExpense" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="expForm.date" required
@@ -318,7 +318,7 @@
         </div>
 
         <!-- Expense Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto -mx-1 px-1">
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-left">
@@ -378,7 +378,7 @@
             <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-500 grid place-items-center text-xs">+</span>
             បន្ថែមលុយសន្សំ
           </h3>
-          <form @submit.prevent="addSaving" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <form @submit.prevent="addSaving" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="savForm.date" required
@@ -415,7 +415,7 @@
         </div>
 
         <!-- Saving Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto -mx-1 px-1">
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-left">
@@ -469,7 +469,7 @@
             <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 grid place-items-center text-xs">+</span>
             បន្ថែមចំណូលថ្មី
           </h3>
-          <form @submit.prevent="addIncome" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+          <form @submit.prevent="addIncome" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="incForm.date" required
@@ -514,7 +514,7 @@
         </div>
 
         <!-- Income Table -->
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto -mx-1 px-1">
           <table class="w-full text-sm">
             <thead>
               <tr class="bg-gray-50 text-left">
