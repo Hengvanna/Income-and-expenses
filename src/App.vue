@@ -6,7 +6,9 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
       <!-- Logo + Title -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <img src="/logo.jpg" alt="Logo" class="w-11 h-11 sm:w-14 sm:h-14 rounded-full object-contain bg-white shadow-md border-2 border-white p-0.5" />
+        <div class="w-11 h-11 sm:w-14 sm:h-14 rounded-full overflow-hidden shadow-md border-2 border-white/60 flex-shrink-0">
+          <img src="/logo.jpg" alt="Logo" class="w-full h-full object-cover scale-[1.3] origin-center" />
+        </div>
         <div>
           <h1 class="font-bold text-gray-800 leading-tight text-sm sm:text-base">ចំណូល & ចំណាយ</h1>
           <p class="text-[10px] text-gray-400">គ្រប់គ្រងហិរញ្ញវត្ថុ · Supabase</p>
