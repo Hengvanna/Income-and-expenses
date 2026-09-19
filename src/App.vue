@@ -5,16 +5,11 @@
   <header class="glass sticky top-0 z-30 border-b border-white/60 shadow-sm">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between gap-3">
       <!-- Logo + Title -->
-      <div class="flex items-center gap-3">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 grid place-items-center shadow">
-          <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"/>
-          </svg>
-        </div>
+      <div class="flex items-center gap-2 sm:gap-3">
+        <img src="/logo.jpg" alt="Logo" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover shadow-md border-2 border-white" />
         <div>
-          <h1 class="font-bold text-gray-800 leading-tight text-sm sm:text-base">ចំណូល &amp; ចំណាយ</h1>
-          <p class="text-[10px] text-gray-400">Income &amp; Expense Tracker · Supabase</p>
+          <h1 class="font-bold text-gray-800 leading-tight text-sm sm:text-base">ចំណូល & ចំណាយ</h1>
+          <p class="text-[10px] text-gray-400">គ្រប់គ្រងហិរញ្ញវត្ថុ · Supabase</p>
         </div>
       </div>
       <!-- Right actions -->
