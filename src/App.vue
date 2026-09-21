@@ -39,6 +39,31 @@
       <button @click="errorMsg=''" class="text-red-400 hover:text-red-600 text-xl leading-none">&times;</button>
     </div>
 
+    <!-- ══ QUICK ACTION BUTTONS ════════════════════════ -->
+    <div class="flex gap-2 sm:gap-3 flex-wrap">
+      <button @click="activeTab='expense'; $nextTick(()=>document.getElementById('exp-form')?.scrollIntoView({behavior:'smooth'}))"
+        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+        ចំណាយ
+      </button>
+      <button @click="activeTab='saving'; $nextTick(()=>document.getElementById('sav-form')?.scrollIntoView({behavior:'smooth'}))"
+        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+        សន្សំ
+      </button>
+      <button @click="activeTab='income'; $nextTick(()=>document.getElementById('inc-form')?.scrollIntoView({behavior:'smooth'}))"
+        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
+        </svg>
+        ចំណូល
+      </button>
+    </div>
+
     <!-- ══ SUMMARY CARDS ════════════════════════════════ -->
     <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
       <!-- Total Income USD -->
@@ -270,7 +295,7 @@
             <span class="w-5 h-5 rounded-md bg-red-100 text-red-500 grid place-items-center text-xs">+</span>
             បន្ថែមចំណាយថ្មី
           </h3>
-          <form @submit.prevent="addExpense" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <form id="exp-form" @submit.prevent="addExpense" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="expForm.date" required
@@ -375,7 +400,7 @@
             <span class="w-5 h-5 rounded-md bg-blue-100 text-blue-500 grid place-items-center text-xs">+</span>
             បន្ថែមលុយសន្សំ
           </h3>
-          <form @submit.prevent="addSaving" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
+          <form id="sav-form" @submit.prevent="addSaving" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="savForm.date" required
@@ -466,7 +491,7 @@
             <span class="w-5 h-5 rounded-md bg-emerald-100 text-emerald-600 grid place-items-center text-xs">+</span>
             បន្ថែមចំណូលថ្មី
           </h3>
-          <form @submit.prevent="addIncome" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <form id="inc-form" @submit.prevent="addIncome" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
             <div>
               <label class="text-[11px] text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
               <input type="date" v-model="incForm.date" required
