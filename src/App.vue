@@ -28,7 +28,7 @@
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24 sm:pb-6">
 
     <!-- ══ ERROR ═══════════════════════════════════════ -->
     <div v-if="errorMsg" class="fade bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-2xl flex items-center gap-3 text-sm">
@@ -39,30 +39,173 @@
       <button @click="errorMsg=''" class="text-red-400 hover:text-red-600 text-xl leading-none">&times;</button>
     </div>
 
-    <!-- ══ QUICK ACTION BUTTONS ════════════════════════ -->
-    <div class="flex gap-2 sm:gap-3 flex-wrap">
-      <button @click="activeTab='expense'; $nextTick(()=>document.getElementById('exp-form')?.scrollIntoView({behavior:'smooth'}))"
-        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-        ចំណាយ
-      </button>
-      <button @click="activeTab='saving'; $nextTick(()=>document.getElementById('sav-form')?.scrollIntoView({behavior:'smooth'}))"
-        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-        សន្សំ
-      </button>
-      <button @click="activeTab='income'; $nextTick(()=>document.getElementById('inc-form')?.scrollIntoView({behavior:'smooth'}))"
-        class="flex-1 min-w-[100px] flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-br from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 active:scale-95 text-white text-sm font-semibold rounded-2xl shadow-md transition-all">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/>
-        </svg>
-        ចំណូល
+    <!-- ══ QUICK ADD MODAL ══════════════════════════════ -->
+    <transition name="fade">
+      <div v-if="showModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" @click.self="showModal=false">
+        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showModal=false"></div>
+        <div class="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl p-6 pb-8 sm:pb-6 z-10 fade">
+          <!-- Modal Header -->
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex gap-2">
+              <button @click="modalType='expense'"
+                :class="modalType==='expense' ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-600'"
+                class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all">💸 ចំណាយ</button>
+              <button @click="modalType='saving'"
+                :class="modalType==='saving' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'"
+                class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all">🏦 សន្សំ</button>
+              <button @click="modalType='income'"
+                :class="modalType==='income' ? 'bg-emerald-500 text-white' : 'bg-gray-100 text-gray-600'"
+                class="px-4 py-1.5 rounded-full text-sm font-semibold transition-all">💰 ចំណូល</button>
+            </div>
+            <button @click="showModal=false" class="w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 grid place-items-center text-gray-500 transition">✕</button>
+          </div>
+
+          <!-- Expense Form -->
+          <form v-if="modalType==='expense'" @submit.prevent="addExpense();showModal=false" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
+                <input type="date" v-model="expForm.date" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ប្រភេទ *</label>
+                <select v-model="expForm.category" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white">
+                  <option value="">-- ជ្រើស --</option>
+                  <option v-for="c in EXP_CATS" :key="c" :value="c">{{ c }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ចំនួន *</label>
+                <input type="number" v-model.number="expForm.amount" min="0" step="0.01" required placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">រូបិយប័ណ្ណ</label>
+                <div class="flex gap-1 h-[42px]">
+                  <button type="button" @click="expForm.currency='USD'" :class="expForm.currency==='USD'?'bg-blue-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">USD</button>
+                  <button type="button" @click="expForm.currency='KHR'" :class="expForm.currency==='KHR'?'bg-yellow-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">KHR</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">ការពិពណ៌នា</label>
+              <input type="text" v-model="expForm.description" placeholder="ពិពណ៌នា..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-red-300 bg-white"/>
+            </div>
+            <button type="submit" :disabled="expSaving" class="w-full py-3 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 disabled:opacity-60 text-white text-sm font-bold rounded-2xl shadow transition-all active:scale-95">
+              {{ expSaving ? 'កំពុងរក្សាទុក...' : '💸 បន្ថែមចំណាយ' }}
+            </button>
+          </form>
+
+          <!-- Saving Form -->
+          <form v-if="modalType==='saving'" @submit.prevent="addSaving();showModal=false" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
+                <input type="date" v-model="savForm.date" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ចំនួន *</label>
+                <input type="number" v-model.number="savForm.amount" min="0" step="0.01" required placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white"/>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">រូបិយប័ណ្ណ</label>
+                <div class="flex gap-1 h-[42px]">
+                  <button type="button" @click="savForm.currency='USD'" :class="savForm.currency==='USD'?'bg-blue-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">USD</button>
+                  <button type="button" @click="savForm.currency='KHR'" :class="savForm.currency==='KHR'?'bg-yellow-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">KHR</button>
+                </div>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ការពិពណ៌នា</label>
+                <input type="text" v-model="savForm.description" placeholder="ពិពណ៌នា..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-300 bg-white"/>
+              </div>
+            </div>
+            <button type="submit" :disabled="expSaving" class="w-full py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 disabled:opacity-60 text-white text-sm font-bold rounded-2xl shadow transition-all active:scale-95">
+              {{ expSaving ? 'កំពុងរក្សាទុក...' : '🏦 រក្សាទុក​សន្សំ' }}
+            </button>
+          </form>
+
+          <!-- Income Form -->
+          <form v-if="modalType==='income'" @submit.prevent="addIncome();showModal=false" class="space-y-3">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">កាលបរិច្ឆេទ *</label>
+                <input type="date" v-model="incForm.date" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-300 bg-white"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ប្រភព *</label>
+                <select v-model="incForm.source" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-300 bg-white">
+                  <option value="">-- ជ្រើស --</option>
+                  <option v-for="s in INC_SOURCES" :key="s" :value="s">{{ s }}</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">ចំនួន *</label>
+                <input type="number" v-model.number="incForm.amount" min="0" step="0.01" required placeholder="0.00" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-300 bg-white"/>
+              </div>
+              <div>
+                <label class="text-xs text-gray-500 mb-1 block">រូបិយប័ណ្ណ</label>
+                <div class="flex gap-1 h-[42px]">
+                  <button type="button" @click="incForm.currency='USD'" :class="incForm.currency==='USD'?'bg-blue-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">USD</button>
+                  <button type="button" @click="incForm.currency='KHR'" :class="incForm.currency==='KHR'?'bg-yellow-500 text-white':'bg-gray-100 text-gray-600'" class="flex-1 rounded-xl text-xs font-bold transition">KHR</button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label class="text-xs text-gray-500 mb-1 block">ការពិពណ៌នា</label>
+              <input type="text" v-model="incForm.description" placeholder="ពិពណ៌នា..." class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-emerald-300 bg-white"/>
+            </div>
+            <button type="submit" :disabled="incSaving" class="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 disabled:opacity-60 text-white text-sm font-bold rounded-2xl shadow transition-all active:scale-95">
+              {{ incSaving ? 'កំពុងរក្សាទុក...' : '💰 បន្ថែមចំណូល' }}
+            </button>
+          </form>
+        </div>
+      </div>
+    </transition>
+
+    <!-- ══ FAB BUTTON (Mobile) ═══════════════════════════ -->
+    <div class="fixed bottom-20 right-4 z-40 sm:bottom-6 sm:right-6 flex flex-col items-end gap-2">
+      <transition name="fade">
+        <div v-if="showFab" class="flex flex-col items-end gap-2 mb-1">
+          <button @click="openModal('income')" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-semibold rounded-2xl shadow-lg transition-all active:scale-95">
+            💰 ចំណូល
+          </button>
+          <button @click="openModal('saving')" class="flex items-center gap-2 px-4 py-2.5 bg-blue-500 hover:bg-blue-600 text-white text-sm font-semibold rounded-2xl shadow-lg transition-all active:scale-95">
+            🏦 សន្សំ
+          </button>
+          <button @click="openModal('expense')" class="flex items-center gap-2 px-4 py-2.5 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-2xl shadow-lg transition-all active:scale-95">
+            💸 ចំណាយ
+          </button>
+        </div>
+      </transition>
+      <button @click="showFab=!showFab"
+        :class="showFab ? 'bg-gray-600 rotate-45' : 'bg-indigo-600'"
+        class="w-14 h-14 rounded-full shadow-2xl text-white text-2xl font-light grid place-items-center transition-all duration-300 active:scale-90 hover:shadow-indigo-300">
+        +
       </button>
     </div>
+
+    <!-- ══ BOTTOM NAV (Mobile only) ══════════════════════ -->
+    <nav class="fixed bottom-0 left-0 right-0 z-30 sm:hidden bg-white/90 backdrop-blur border-t border-gray-100 shadow-lg">
+      <div class="grid grid-cols-4 h-16">
+        <button @click="activeTab='expense'" :class="activeTab==='expense'?'text-red-500':'text-gray-400'" class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors">
+          <span class="text-xl">💸</span> ចំណាយ
+        </button>
+        <button @click="activeTab='saving'" :class="activeTab==='saving'?'text-blue-500':'text-gray-400'" class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors">
+          <span class="text-xl">🏦</span> សន្សំ
+        </button>
+        <button @click="activeTab='income'" :class="activeTab==='income'?'text-emerald-500':'text-gray-400'" class="flex flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors">
+          <span class="text-xl">💰</span> ចំណូល
+        </button>
+        <button @click="exportCSV" class="flex flex-col items-center justify-center gap-0.5 text-[10px] text-gray-400 font-medium">
+          <span class="text-xl">📊</span> CSV
+        </button>
+      </div>
+    </nav>
 
     <!-- ══ SUMMARY CARDS ════════════════════════════════ -->
     <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -630,6 +773,15 @@ const expSaving = ref(false)
 const incSaving = ref(false)
 const errorMsg  = ref('')
 const activeTab = ref('expense')
+const showModal  = ref(false)
+const showFab    = ref(false)
+const modalType  = ref('expense')
+
+function openModal(type) {
+  modalType.value = type
+  showModal.value = true
+  showFab.value   = false
+}
 const filterDate   = ref('')
 const filterMonth  = ref('')
 const filterExpCat = ref('')
